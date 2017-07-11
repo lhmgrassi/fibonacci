@@ -1,34 +1,42 @@
 //
 //  FibonacciHelper.swift
-//  PrefetchingImages
+//
 //
 //  Created by Luis Henrique Grassi on 11/07/17.
-//  Copyright © 2017 Andrey Gordeev (andrew8712@gmail.com). All rights reserved.
+//  Copyright © 2017 lhmgrassi. All rights reserved.
 //
 
 import UIKit
 
-class FibonacciHelper: NSObject {
+protocol FibonacciProtocol {
+    func fibonacci(_ n: Int) -> Double
+}
+
+class FibonacciHelper: NSObject, FibonacciProtocol {
     
     //https://gist.github.com/getaaron/939e27ff62bd99aba788aae8c3f5fcbc
     
-    var cache = [Int:Int]()
+    var cache = [Int:Double]()
     
-    func fibonacci(_ index: Int) -> Int {
-      
-        guard index > 1 else { return 1 }
-        
-        if let cachedResult = cache[index] {
-            return cachedResult
+    func fibonacci(_ n: Int) -> Double {
+
+        if n == 0 {
+            return 0
+        } else if n == 1 {
+            return 1
         }
         
-        print("calculating f(\(index))")
+        if let cached = cache[n] {
+            return cached
+        }
         
-        let n1 = fibonacci(index - 1)
-        let n2 = fibonacci(index - 2)
+        print("calculating f(\(n))")
+        
+        let n1 = fibonacci(n - 1)
+        let n2 = fibonacci(n - 2)
         let result = n1 + n2
         
-        cache[index] = result
+        cache[n] = result
         
         return result
     }

@@ -21,6 +21,8 @@ class FibonacciViewController: UIViewController {
             fibonacci = FibonacciHelper()
         }
         
+        print(Int.max)
+        
         tableView.rowHeight = UITableViewAutomaticDimension
         tableView.estimatedRowHeight = 50
     }
@@ -38,15 +40,28 @@ extension FibonacciViewController : UITableViewDelegate, UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "FibonacciTableViewCell", for: indexPath) as! FibonacciTableViewCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: "FibonacciTableViewCell", for: indexPath)
+        cell.textLabel?.adjustsFontSizeToFitWidth = true
+        cell.textLabel?.minimumScaleFactor = 0.5
         
-        cell.fibonacciLabel.text = "f(\(indexPath.row)) = \(fibonacci.fibonacci(indexPath.row))"
+        let indicator = UIActivityIndicatorView(activityIndicatorStyle: .gray)
+        cell.accessoryView = indicator
+        indicator.startAnimating()
+        
+        DispatchQueue.global(qos: .background).async { [unowned self] in
+            let result = self.fibonacci.fibonacci(indexPath.row)
+            DispatchQueue.main.async {
+                indicator.stopAnimating()
+                cell.textLabel?.text = "f(\(indexPath.row)) = \(result)"
+            }
+        }
         
         return cell
     }
    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 92
+        //max index to avoid overflow (tested in iphone 4s and iphone 6)
+        return 1477
     }
 
     
