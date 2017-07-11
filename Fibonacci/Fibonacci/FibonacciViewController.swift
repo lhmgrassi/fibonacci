@@ -16,6 +16,9 @@ class FibonacciViewController: UIViewController {
         
     var fibonacci : FibonacciHelper!
     
+    var operations = [IndexPath:BlockOperation]()
+    var queue = OperationQueue()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -37,6 +40,8 @@ class FibonacciViewController: UIViewController {
             let _ = fibonacci.fibonacci(92)
         }
         
+        queue.maxConcurrentOperationCount = 4
+        queue.qualityOfService = .background
     }
 
     override func didReceiveMemoryWarning() {
@@ -49,7 +54,7 @@ class FibonacciViewController: UIViewController {
 }
 
 extension FibonacciViewController : UITableViewDelegate, UITableViewDataSource, UITableViewDataSourcePrefetching {
-
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "FibonacciTableViewCell", for: indexPath)
@@ -60,18 +65,27 @@ extension FibonacciViewController : UITableViewDelegate, UITableViewDataSource, 
         cell.accessoryView = indicator
         indicator.startAnimating()
         
-        //TODO: - a good improvement would be cancel threds that are calculating for cells not visible anymore
-        DispatchQueue.global(qos: .background).async { [unowned self] in
+        let operation = BlockOperation(block: { [unowned self] in
             let result = self.fibonacci.fibonacci(indexPath.row)
             DispatchQueue.main.async {
                 indicator.stopAnimating()
                 cell.textLabel?.text = "f(\(indexPath.row)) = \(result)"
             }
-        }
+        })
+        operations[indexPath] = operation
+        queue.addOperation(operation)
         
         return cell
     }
    
+    func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        
+        if let operation = operations[indexPath] {
+            operation.cancel()
+            operations.removeValue(forKey: indexPath)
+        }
+    }
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         //max index to avoid overflow (tested in iphone 4s and iphone 6)
         return 1477

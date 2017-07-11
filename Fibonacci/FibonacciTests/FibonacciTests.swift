@@ -50,6 +50,7 @@ class FibonacciTests: XCTestCase {
         assert(result9 == 34, "fibonacci(0) should be 34")
        
         assert(fibonacci.cache[9] != nil, "should have cache for index 9")
+        assert(fibonacci.cache[10] == nil, "should not have cache for index 10")
         
 
     }
